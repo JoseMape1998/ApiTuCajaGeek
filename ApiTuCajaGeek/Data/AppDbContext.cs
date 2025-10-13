@@ -11,5 +11,7 @@ namespace ApiTuCajaGeek.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<ImageProduct> ImagesProduct { get; set; }
+
     }
 }
