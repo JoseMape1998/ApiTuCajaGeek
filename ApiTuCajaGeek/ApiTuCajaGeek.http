@@ -1,0 +1,6 @@
+@ApiTuCajaGeek_HostAddress = http://localhost:5041
+
+GET {{ApiTuCajaGeek_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
