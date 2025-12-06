@@ -12,13 +12,13 @@ namespace ApiTuCajaGeekTest.Test
 {
     public class AuthTest
     {
-        private AppDbContext GetInMemoryDbContext()
+        private ApiTuCajaGeekContext GetInMemoryDbContext()
         {
-            var options = new DbContextOptionsBuilder<AppDbContext>()
+            var options = new DbContextOptionsBuilder<ApiTuCajaGeekContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString()) 
                 .Options;
 
-            return new AppDbContext(options);
+            return new ApiTuCajaGeekContext(options);
         }
 
         private string GetSha256(string input)
@@ -42,7 +42,7 @@ namespace ApiTuCajaGeekTest.Test
             var password = "123456";
             var passwordHash = GetSha256(password);
 
-            var user = new User
+            var user = new Users
             {
                 UserId = Guid.NewGuid(),
                 EmailUser = "test@correo.com",
@@ -78,7 +78,7 @@ namespace ApiTuCajaGeekTest.Test
             // Arrange
             var context = GetInMemoryDbContext();
 
-            var user = new User
+            var user = new Users
             {
                 UserId = Guid.NewGuid(),
                 EmailUser = "test@correo.com",

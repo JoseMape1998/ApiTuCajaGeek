@@ -1,22 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ApiTuCajaGeek.Models
+﻿namespace ApiTuCajaGeek.Models
 {
-    [Table("Images_Product")]
-    public class ImageProduct
+    public class Images_Product
     {
-        [Key]
-        [Column("Image_Product_Id")]
-        public long ImageProductId { get; set; }
-
-        [Required]
-        [Column("Product_Id")]
-        public long ProductId { get; set; }
-
-        [Required]
-        [StringLength(500)]
-        [Column("Image_Url")]
-        public string ImageUrl { get; set; } = string.Empty;
+        public long Image_product_Id { get; set; }
+        public long Product_Id { get; set; }
+        public string Image_Url { get; set; } = string.Empty;
+        public Products? Product { get; set; }
     }
 }
