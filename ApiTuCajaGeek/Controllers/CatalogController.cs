@@ -1,13 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
-using ApiTuCajaGeek.AppData;
+﻿using ApiTuCajaGeek.AppData;
 using ApiTuCajaGeek.DTOs;
 using ApiTuCajaGeek.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace ApiTuCajaGeek.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CatalogController : ControllerBase

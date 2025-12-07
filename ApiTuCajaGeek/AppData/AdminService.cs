@@ -19,6 +19,10 @@ namespace ApiTuCajaGeek.AppData
             _passwordHasher = new PasswordHasher<Users>();
         }
 
+        // ==========================================
+        // ROLES
+        // ==========================================
+
         public async Task<Rol> CreateRoleAsync(CreateRoleDto dto)
         {
             if (await _context.Rol.AnyAsync(r => r.Name_Rol == dto.Nombre))
@@ -54,6 +58,10 @@ namespace ApiTuCajaGeek.AppData
             await _context.SaveChangesAsync();
             return true;
         }
+
+        // ==========================================
+        // USERS
+        // ==========================================
 
         public async Task<Users> CreateUserAsync(CreateUserDto dto)
         {
@@ -111,5 +119,115 @@ namespace ApiTuCajaGeek.AppData
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<List<Rol>> GetAllRolesAsync()
+        {
+            return await _context.Rol.ToListAsync();
+        }
+
+        public async Task<Rol?> GetRoleByIdAsync(Guid id)
+        {
+            return await _context.Rol.FirstOrDefaultAsync(r => r.Rol_id == id);
+        }
+
+        public async Task<List<UserDetailDto>> GetAllUsersAsync()
+        {
+            var users = await _context.Users
+                .Include(u => u.Rol)
+                .Include(u => u.ShoppingCarts)
+                .Include(u => u.PurchaseData)
+                    .ThenInclude(pd => pd.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(u => u.PurchaseData)
+                    .ThenInclude(pd => pd.Product.Category)
+                .ToListAsync();
+
+            return users.Select(u => new UserDetailDto
+            {
+                UserId = u.User_Id,
+                Email = u.Email_user,
+                Name = u.Name_user,
+                LastName = u.LastName_user,
+                CellNumber = u.Cell_number_user,
+                UserState = u.User_state,
+
+                Rol = u.Rol == null ? null : new RoleDto
+                {
+                    RolId = u.Rol.Rol_id,
+                    NameRol = u.Rol.Name_Rol
+                },
+
+                CartItems = u.ShoppingCarts.Select(sc => new ShoppingCartItemDto
+                {
+                    User_Id = sc.User_Id,
+                    Product_Id = sc.Product_Id,
+                    Amount = sc.Amount
+                }).ToList(),
+
+                PurchaseData = u.PurchaseData == null
+                    ? null
+                    : new PurchaseProductDto
+                    {
+                        Product_Id = u.PurchaseData.ProductId ?? 0,
+                        Product_name = u.PurchaseData.Product?.Product_name ?? string.Empty,
+                        Category_name = u.PurchaseData.Product?.Category?.Category_name ?? string.Empty,
+                        Unit_value = u.PurchaseData.UnitValue ?? 0,
+                        Images = u.PurchaseData.Product?.Images?.Select(i => i.Image_Url).ToList()
+                                 ?? new List<string>()
+                    }
+
+            }).ToList();
+        }
+
+        public async Task<UserDetailDto?> GetUserByIdAsync(Guid id)
+        {
+            var u = await _context.Users
+                .Include(u => u.Rol)
+                .Include(u => u.ShoppingCarts)
+                .Include(u => u.PurchaseData)
+                    .ThenInclude(pd => pd.Product)
+                        .ThenInclude(p => p.Images)
+                .Include(u => u.PurchaseData)
+                    .ThenInclude(pd => pd.Product.Category)
+                .FirstOrDefaultAsync(u => u.User_Id == id);
+
+            if (u == null) return null;
+
+            return new UserDetailDto
+            {
+                UserId = u.User_Id,
+                Email = u.Email_user,
+                Name = u.Name_user,
+                LastName = u.LastName_user,
+                CellNumber = u.Cell_number_user,
+                UserState = u.User_state,
+
+                Rol = u.Rol == null ? null : new RoleDto
+                {
+                    RolId = u.Rol.Rol_id,
+                    NameRol = u.Rol.Name_Rol
+                },
+
+                CartItems = u.ShoppingCarts.Select(sc => new ShoppingCartItemDto
+                {
+                    User_Id = sc.User_Id,
+                    Product_Id = sc.Product_Id,
+                    Amount = sc.Amount
+                }).ToList(),
+
+                PurchaseData = u.PurchaseData == null
+                    ? null
+                    : new PurchaseProductDto
+                    {
+                        Product_Id = u.PurchaseData.ProductId ?? 0,
+                        Product_name = u.PurchaseData.Product?.Product_name ?? string.Empty,
+                        Category_name = u.PurchaseData.Product?.Category?.Category_name ?? string.Empty,
+                        Unit_value = u.PurchaseData.UnitValue ?? 0,
+                        Images = u.PurchaseData.Product?.Images?.Select(i => i.Image_Url).ToList()
+                                 ?? new List<string>()
+                    }
+            };
+        }
+
     }
 }

@@ -91,15 +91,15 @@ namespace ApiTuCajaGeek.Data
 
             modelBuilder.Entity<Purchase_data>(eb =>
             {
-                eb.HasKey(e => e.User_Id);
-                eb.Property(e => e.Purchase_address).HasMaxLength(150).IsRequired().HasColumnType("varchar(150)");
+                eb.HasKey(e => e.UserId);
+                eb.Property(e => e.PurchaseAddress).HasMaxLength(150).IsRequired().HasColumnType("varchar(150)");
                 eb.HasOne(e => e.User)
                   .WithOne(u => u.PurchaseData)
-                  .HasForeignKey<Purchase_data>(p => p.User_Id)
+                  .HasForeignKey<Purchase_data>(p => p.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
                 eb.HasOne(e => e.PurchaseType)
                   .WithMany(t => t.PurchaseDatas)
-                  .HasForeignKey(e => e.Purchase_type_Id)
+                  .HasForeignKey(e => e.PurchaseTypeId)
                   .OnDelete(DeleteBehavior.Restrict);
             });
 
