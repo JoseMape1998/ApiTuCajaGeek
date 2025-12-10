@@ -158,13 +158,15 @@ namespace ApiTuCajaGeek.Controllers
         }
 
         [HttpPost("products/{id:long}/images")]
-        public async Task<IActionResult> CreateProductImage(long id, IFormFile file)
+        [DisableRequestSizeLimit]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        public async Task<IActionResult> CreateProductImage(long id, [FromForm] UploadFileDto dto)
         {
             _logger.LogInformation("Creando imagen producto: {Id}", id);
             try
             {
-                if (file == null) return BadRequest(new ErrorResponse { Message = "Archivo no enviado" });
-                var img = await _service.CreateProductImageAsync(id, file);
+                if (dto.File == null) return BadRequest(new ErrorResponse { Message = "Archivo no enviado" });
+                var img = await _service.CreateProductImageAsync(id, dto.File);
                 return Ok(new { Message = "Imagen creada", ImageId = img.Image_product_Id, Url = img.Image_Url });
             }
             catch (Exception ex)
@@ -191,6 +193,7 @@ namespace ApiTuCajaGeek.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("categories")]
         public async Task<IActionResult> GetCategories()
         {
@@ -237,6 +240,8 @@ namespace ApiTuCajaGeek.Controllers
             }
         }
 
+
+        [AllowAnonymous]
         [HttpGet("products")]
         public async Task<IActionResult> GetProducts()
         {
