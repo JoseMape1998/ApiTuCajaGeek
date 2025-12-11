@@ -18,10 +18,10 @@ namespace ApiTuCajaGeek.AppData
             _context = context;
         }
 
-        public async Task<List<PurchaseResponseDto>> GetUserPurchasesAsync(Guid userId)
+        public async Task<List<PurchaseResponseDto>> GetUserPurchasesAsync(string userId)
         {
             return await _context.Purchase_data
-                .Where(p => p.UserId == userId && p.PurchaseState == true)
+                .Where(p => p.UserId == Guid.Parse(userId) && p.PurchaseState == true)
                 .Include(p => p.Product)
                     .ThenInclude(pr => pr.Images)    // Images_Product -> Image_Url
                 .Include(p => p.Product)
@@ -30,7 +30,7 @@ namespace ApiTuCajaGeek.AppData
                 .OrderByDescending(p => p.ProductId) 
                 .Select(p => new PurchaseResponseDto
                 {
-                    Purchase_Id = 0, // sin PK en el modelo mostrado
+                    Purchase_Id = p.Purchase_Id, 
                     User_Id = p.UserId,
                     Purchase_type = p.PurchaseType.Name_purchase_type,
                     Purchase_address = p.PurchaseAddress,
@@ -49,10 +49,10 @@ namespace ApiTuCajaGeek.AppData
                 .ToListAsync();
         }
 
-        public async Task<PurchaseResponseDto?> GetPurchaseByProductAsync(Guid userId, long productId)
+        public async Task<PurchaseResponseDto?> GetPurchaseByProductAsync(string userId, long productId)
         {
             var p = await _context.Purchase_data
-                .Where(x => x.UserId == userId && x.ProductId == productId && x.PurchaseState == true)
+                .Where(x => x.UserId == Guid.Parse(userId) && x.ProductId == productId && x.PurchaseState == true)
                 .Include(x => x.Product).ThenInclude(pr => pr.Images)
                 .Include(x => x.Product).ThenInclude(pr => pr.Category)
                 .Include(x => x.PurchaseType)
@@ -80,11 +80,10 @@ namespace ApiTuCajaGeek.AppData
             };
         }
 
-        public async Task<List<PurchaseResponseDto>> ProcessPurchaseFromCartAsync(ProcessPurchaseRequestDto request)
+        public async Task<List<PurchaseResponseDto>> ProcessPurchaseFromCartAsync(ProcessPurchaseRequestDto request, string userId)
         {
-            // traemos items activos del carrito (filtrando productos activos en la entidad Products)
             var cartItems = await _context.Shopping_cart
-                .Where(c => c.User_Id == request.User_Id && c.Product != null && c.Product.Product_State)
+                .Where(c => c.User_Id == Guid.Parse(userId) && c.Product != null && c.Product.Product_State)
                 .Include(c => c.Product)
                     .ThenInclude(p => p.Images)
                 .Include(c => c.Product)
@@ -100,10 +99,10 @@ namespace ApiTuCajaGeek.AppData
             {
                 var pd = new Purchase_data
                 {
-                    UserId = request.User_Id,
+                    UserId = Guid.Parse(userId),
                     ProductId = item.Product_Id,
                     UnitValue = item.Unit_value,
-                    PurchaseTypeId = request.Purchase_type_Id,
+                    PurchaseTypeId = 2,
                     PurchaseAddress = request.Purchase_address,
                     PurchaseState = true
                 };
@@ -113,19 +112,17 @@ namespace ApiTuCajaGeek.AppData
 
             await _context.Purchase_data.AddRangeAsync(purchases);
 
-            // eliminar los items procesados del carrito
             _context.Shopping_cart.RemoveRange(cartItems);
 
             await _context.SaveChangesAsync();
 
-            // devolver las compras creadas (filtradas por user)
-            return await GetUserPurchasesAsync(request.User_Id);
+            return await GetUserPurchasesAsync(userId);
         }
 
-        public async Task<bool> DisablePurchaseByProductAsync(Guid userId, long productId)
+        public async Task<bool> DisablePurchaseByProductAsync(string userId, long purchaseId)
         {
             var purchase = await _context.Purchase_data
-                .FirstOrDefaultAsync(p => p.UserId == userId && p.ProductId == productId && p.PurchaseState == true);
+                .FirstOrDefaultAsync(p => p.UserId == Guid.Parse(userId) && p.Purchase_Id == purchaseId && p.PurchaseState == true);
 
             if (purchase == null) return false;
 

@@ -159,7 +159,6 @@ namespace ApiTuCajaGeek.AppData
 
                 CartItems = u.ShoppingCarts.Select(sc => new ShoppingCartItemDto
                 {
-                    User_Id = sc.User_Id,
                     Product_Id = sc.Product_Id,
                     Amount = sc.Amount
                 }).ToList(),
@@ -210,7 +209,6 @@ namespace ApiTuCajaGeek.AppData
 
                 CartItems = u.ShoppingCarts.Select(sc => new ShoppingCartItemDto
                 {
-                    User_Id = sc.User_Id,
                     Product_Id = sc.Product_Id,
                     Amount = sc.Amount
                 }).ToList(),

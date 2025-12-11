@@ -17,5 +17,6 @@ namespace ApiTuCajaGeek.Models
         public ICollection<User_rating>? User_ratings { get; set; }
         public ICollection<Shopping_cart>? ShoppingCarts { get; set; }
         public Purchase_data? PurchaseData { get; set; }
+
     }
 }

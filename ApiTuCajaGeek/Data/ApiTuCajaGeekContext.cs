@@ -91,7 +91,7 @@ namespace ApiTuCajaGeek.Data
 
             modelBuilder.Entity<Purchase_data>(eb =>
             {
-                eb.HasKey(e => e.UserId);
+                eb.HasKey(e => e.Purchase_Id);
                 eb.Property(e => e.PurchaseAddress).HasMaxLength(150).IsRequired().HasColumnType("varchar(150)");
                 eb.HasOne(e => e.User)
                   .WithOne(u => u.PurchaseData)

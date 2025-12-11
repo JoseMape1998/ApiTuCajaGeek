@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ApiTuCajaGeek.Controllers
@@ -25,9 +26,10 @@ namespace ApiTuCajaGeek.Controllers
         }
 
         // 1. OBTENER TODAS LAS COMPRAS DEL USUARIO
-        [HttpGet("user/{userId:guid}")]
-        public async Task<IActionResult> GetUserPurchases(Guid userId)
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUserPurchases()
         {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation("Obteniendo compras del usuario: {UserId}", userId);
 
             try
@@ -43,9 +45,10 @@ namespace ApiTuCajaGeek.Controllers
         }
 
         // 2. OBTENER UNA COMPRA POR PRODUCTO
-        [HttpGet("user/{userId:guid}/product/{productId:long}")]
-        public async Task<IActionResult> GetPurchaseByProduct(Guid userId, long productId)
+        [HttpGet("user/product/{productId:long}")]
+        public async Task<IActionResult> GetPurchaseByProduct(long productId)
         {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation("Obteniendo compra del usuario: {UserId} para el producto: {ProductId}", userId, productId);
 
             try
@@ -68,29 +71,32 @@ namespace ApiTuCajaGeek.Controllers
         [HttpPost("process")]
         public async Task<IActionResult> ProcessPurchase([FromBody] ProcessPurchaseRequestDto request)
         {
-            _logger.LogInformation("Procesando compra del usuario: {UserId}", request.User_Id);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("Procesando compra del usuario: {UserId}", userId);
 
             try
             {
-                var result = await _service.ProcessPurchaseFromCartAsync(request);
+                var result = await _service.ProcessPurchaseFromCartAsync(request, userId);
                 return Ok(new { Message = "Compra procesada correctamente", Purchases = result });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error procesando compra del usuario: {UserId}", request.User_Id);
+                _logger.LogError(ex, "Error procesando compra del usuario: {UserId}", userId);
                 return StatusCode(500, new ErrorResponse { Message = "Error procesando compra", Detail = ex.Message });
             }
         }
 
         // 4. DESHABILITAR UNA COMPRA
-        [HttpPut("disable/{userId:guid}/product/{productId:long}")]
-        public async Task<IActionResult> DisablePurchase(Guid userId, long productId)
+        [HttpPut("disable/product/{purchaseId:long}")]
+        public async Task<IActionResult> DisablePurchase(long purchaseId)
         {
-            _logger.LogInformation("Deshabilitando compra del usuario: {UserId} para el producto: {ProductId}", userId, productId);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            _logger.LogInformation("Deshabilitando compra del usuario: {userId} para el producto: {purchaseId}", userId, purchaseId);
 
             try
             {
-                var ok = await _service.DisablePurchaseByProductAsync(userId, productId);
+                var ok = await _service.DisablePurchaseByProductAsync(userId, purchaseId);
 
                 if (!ok)
                     return NotFound(new ErrorResponse { Message = "Compra no encontrada" });
@@ -99,7 +105,7 @@ namespace ApiTuCajaGeek.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deshabilitando compra: User={UserId}, Product={ProductId}", userId, productId);
+                _logger.LogError(ex, "Error deshabilitando compra: User={userId}, Product={purchaseId}", userId, purchaseId);
                 return StatusCode(500, new ErrorResponse { Message = "Error deshabilitando compra", Detail = ex.Message });
             }
         }

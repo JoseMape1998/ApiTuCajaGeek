@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace ApiTuCajaGeek.Controllers
@@ -21,15 +22,18 @@ namespace ApiTuCajaGeek.Controllers
         {
             _service = service;
             _logger = logger;
+            
+
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddToCart([FromBody] ShoppingCartItemDto dto)
         {
-            _logger.LogInformation("Agregando producto al carrito: {ProductId} para el usuario: {UserId}", dto.Product_Id, dto.User_Id);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("Agregando producto al carrito: {ProductId} para el usuario: {UserId}", dto.Product_Id, userId);
             try
             {
-                var item = await _service.AddToCartAsync(dto);
+                var item = await _service.AddToCartAsync(dto, userId);
                 return Ok(new { Message = "Producto agregado al carrito", Shopping_cart_Id = item.Shopping_cart_Id });
             }
             catch (Exception ex)
@@ -73,9 +77,10 @@ namespace ApiTuCajaGeek.Controllers
             }
         }
 
-        [HttpGet("{userId:guid}")]
-        public async Task<IActionResult> GetUserCart(Guid userId)
+        [HttpGet("get")]
+        public async Task<IActionResult> GetUserCart()
         {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation("Obteniendo carrito del usuario: {UserId}", userId);
             try
             {

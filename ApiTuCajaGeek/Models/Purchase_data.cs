@@ -6,6 +6,9 @@ namespace ApiTuCajaGeek.Models
     [Table("Purchase_data")]
     public class Purchase_data
     {
+        [Column("Purchase_Id")]
+        public long Purchase_Id { get; set; }
+
         [Column("User_Id")]
         public Guid UserId { get; set; }
 

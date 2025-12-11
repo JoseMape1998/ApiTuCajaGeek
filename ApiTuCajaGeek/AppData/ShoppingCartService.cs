@@ -18,13 +18,13 @@ namespace ApiTuCajaGeek.AppData
             _context = context;
         }
 
-        public async Task<Shopping_cart> AddToCartAsync(ShoppingCartItemDto dto)
+        public async Task<Shopping_cart> AddToCartAsync(ShoppingCartItemDto dto, string userId)
         {
             var product = await _context.Products.FindAsync(dto.Product_Id);
             if (product == null) throw new Exception("Producto no encontrado");
 
             var existingItem = await _context.Shopping_cart
-                .FirstOrDefaultAsync(c => c.User_Id == dto.User_Id && c.Product_Id == dto.Product_Id);
+                .FirstOrDefaultAsync(c => c.User_Id == Guid.Parse(userId) && c.Product_Id == dto.Product_Id);
 
             if (existingItem != null)
             {
@@ -35,7 +35,7 @@ namespace ApiTuCajaGeek.AppData
 
             var cartItem = new Shopping_cart
             {
-                User_Id = dto.User_Id,
+                User_Id = Guid.Parse(userId),
                 Product_Id = dto.Product_Id,
                 Unit_value = product.Product_value_after_discount,
                 Amount = dto.Amount
@@ -74,10 +74,10 @@ namespace ApiTuCajaGeek.AppData
             return true;
         }
 
-        public async Task<List<ShoppingCartResponseDto>> GetUserCartAsync(Guid userId)
+        public async Task<List<ShoppingCartResponseDto>> GetUserCartAsync(string userId)
         {
             return await _context.Shopping_cart
-                .Where(c => c.User_Id == userId && c.Product.Product_State)
+                .Where(c => c.User_Id == Guid.Parse(userId) && c.Product.Product_State)
                 .Select(c => new ShoppingCartResponseDto
                 {
                     Shopping_cart_Id = c.Shopping_cart_Id,

@@ -47,7 +47,7 @@ namespace ApiTuCajaGeek.AppData
             {
             new Claim(ClaimTypes.NameIdentifier, user.User_Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email_user),
-            new Claim(ClaimTypes.Role, user.Rol.Name_Rol)
+            new Claim(ClaimTypes.Role, user.Rol.Name_Rol),
         };
 
             var token = new JwtSecurityToken(
